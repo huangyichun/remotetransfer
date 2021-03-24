@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="OFF" monitorInterval="30">
+
+    <Appenders>
+        <!-- log_path为vm参数，在tomcat中start.sh配置,log4j2在vm参数前要加sys: -->
+        <RollingFile name="RollingFile" fileName="../log/userauth.log"
+                     filePermissions="rw-r--r--"
+                     filePattern="../log/$${date:yyyy-MM-dd}/userauth-%d{yyyy-MM-dd-HH}-%i.log.gz" >
+            <PatternLayout pattern="%d{yyyy-MMM-dd HH:mm:ss.SSS} -[%X{requestId}]– [%7r] – [%6p] – [%t] - [%l] - %msg%n"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="12" modulate="true"/>
+                <SizeBasedTriggeringPolicy size="500 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="100">
+                <!--
+                Nested conditions: the inner condition is only evaluated on files
+                for which the outer conditions are true.
+                -->
+                <Delete basePath="../log" maxDepth="2" followLinks="true">
+                    <IfFileName glob="*/userauth-*.log.gz">
+                        <IfLastModified age="24H">
+                            <IfAny>
+                                <IfAccumulatedFileSize exceeds="100 GB" />
+                                <IfAccumulatedFileCount exceeds="10" />
+                            </IfAny>
+                        </IfLastModified>
+                    </IfFileName>
+                </Delete>
+            </DefaultRolloverStrategy>
+        </RollingFile>
+
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yyyy-MMM-dd HH:mm:ss.SSS} -[%X{requestId}]– [%7r] – [%6p] – [%t] - [%l] - %msg%n"/>
+        </Console>
+
+        <!-- 定义单个类的日志输出文件 -->
+        <!-- <File name="FileName" fileName="/export/logs/ClassName.log" append="false">
+            <PatternLayout pattern="%d{HH:mm:ss.SSS} %-5level %class{36} %L %M - %msg%xEx%n"/>
+        </File> -->
+    </Appenders>
+
+    <Loggers>
+        <AsyncLogger name="com.jdcloud.userauth.*" level="INFO" includeLocation="true" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        <AsyncLogger name="com.amazonaws.http.*" level="DEBUG" includeLocation="true" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        <AsyncLogger name="org.apache.http.*" level="DEBUG" includeLocation="true" additivity="false">
+            <AppenderRef ref="RollingFile"/>
+        </AsyncLogger>
+        <Root level="INFO">
+            <AppenderRef ref="RollingFile"/>
+            <appender-ref ref="Console"/>
+        </Root>
+    </Loggers>
+</Configuration>
