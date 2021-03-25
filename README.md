@@ -1,6 +1,6 @@
 # 自定义注解实现简单的RPC远程调用
 
-博客地址：https://www.jianshu.com/u/f465a28bc932
+博客地址：https://www.jianshu.com/p/be95f5e6d054
 
 支持功能：
 1. 替换SpringCloud @Feign注解
